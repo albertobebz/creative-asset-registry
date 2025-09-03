@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [assetId, setAssetId] = useState<string>('');
   const [sha256Hash, setSha256Hash] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   
   const router = useRouter();
   const { registerAsset, isLoading, error: contractError, txHash, isSuccess } = useRegisterAsset();
@@ -20,30 +21,53 @@ export default function RegisterPage() {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file size (100MB max)
-      if (file.size > 100 * 1024 * 1024) {
-        setError('File size must be less than 100MB');
-        return;
-      }
+      handleFileValidation(file);
+    }
+  };
 
-      // Validate MIME type
-      const allowedTypes = [
-        'image/png',
-        'image/jpeg',
-        'application/pdf',
-        'application/json',
-        'text/plain'
-      ];
-      
-      if (!allowedTypes.includes(file.type)) {
-        setError('File type not supported. Please use PNG, JPEG, PDF, JSON, or TXT files.');
-        return;
-      }
+  const handleFileValidation = (file: File) => {
+    // Validate file size (100MB max)
+    if (file.size > 100 * 1024 * 1024) {
+      setError('File size must be less than 100MB');
+      return;
+    }
 
-      setSelectedFile(file);
-      setError(null);
-      setAssetId('');
-      setSha256Hash('');
+    // Validate MIME type
+    const allowedTypes = [
+      'image/png',
+      'image/jpeg',
+      'application/pdf',
+      'application/json',
+      'text/plain'
+    ];
+    
+    if (!allowedTypes.includes(file.type)) {
+      setError('File type not supported. Please use PNG, JPEG, PDF, JSON, or TXT files.');
+      return;
+    }
+
+    setSelectedFile(file);
+    setError(null);
+    setAssetId('');
+    setSha256Hash('');
+  };
+
+  // Drag and drop handlers
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(false);
+    const file = event.dataTransfer.files?.[0];
+    if (file) {
+      handleFileValidation(file);
     }
   };
 
@@ -191,18 +215,35 @@ export default function RegisterPage() {
 
           <div className="space-y-6">
             {/* File Upload Area */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-400 transition-colors">
+            <div
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 ${
+                isDragOver 
+                  ? 'border-indigo-400 bg-indigo-50' 
+                  : 'border-gray-300 hover:border-indigo-400'
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
               <div className="space-y-4">
-                <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                  <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                {isDragOver ? (
+                  <svg className="mx-auto h-12 w-12 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                ) : (
+                  <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
                 
                 <div>
                   <label htmlFor="file-upload" className="cursor-pointer">
                     <span className="text-lg font-medium text-indigo-600 hover:text-indigo-500">
-                      Choose a file
+                      {isDragOver ? 'Drop file here' : 'Choose a file'}
                     </span>
-                    <span className="text-gray-500"> or drag and drop</span>
+                    <span className="text-gray-500">
+                      {isDragOver ? '' : ' or drag and drop'}
+                    </span>
                   </label>
                   <input
                     id="file-upload"

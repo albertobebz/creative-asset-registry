@@ -8,23 +8,23 @@ import '@rainbow-me/rainbowkit/styles.css';
 
 import { mainnet } from 'wagmi/chains';
 
-// Custom Amoy testnet configuration (compatible with MetaMask)
-const amoyTestnet = {
-  id: 80001,
-  name: 'Mumbai Testnet', // Use name MetaMask recognizes
-  network: 'mumbai',
+// Custom Sepolia testnet configuration (compatible with MetaMask)
+const sepoliaTestnet = {
+  id: 11155111,
+  name: 'Sepolia',
+  network: 'sepolia',
   nativeCurrency: {
     decimals: 18,
-    name: 'MATIC',
-    symbol: 'MATIC',
+    name: 'Sepolia Ether',
+    symbol: 'SEP',
   },
   rpcUrls: {
-    public: { http: ['https://rpc-mumbai.maticvigil.com'] },
-    default: { http: ['https://rpc-mumbai.maticvigil.com'] },
+    public: { http: ['https://rpc.sepolia.org'] },
+    default: { http: ['https://rpc.sepolia.org'] },
   },
   blockExplorers: {
-    etherscan: { name: 'Mumbai Polygonscan', url: 'https://mumbai.polygonscan.com' },
-    default: { name: 'Mumbai Polygonscan', url: 'https://mumbai.polygonscan.com' },
+    etherscan: { name: 'Sepolia Etherscan', url: 'https://sepolia.etherscan.io' },
+    default: { name: 'Sepolia Etherscan', url: 'https://sepolia.etherscan.io' },
   },
   testnet: true,
 } as const;
@@ -33,7 +33,7 @@ const amoyTestnet = {
 const config = getDefaultConfig({
   appName: 'Creative Asset Registry',
   projectId: 'CREATIVE_ASSET_REGISTRY',
-  chains: [mainnet, amoyTestnet], // Include both networks
+  chains: [mainnet, sepoliaTestnet], // Include both networks
   ssr: false,
 });
 

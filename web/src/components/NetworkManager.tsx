@@ -17,11 +17,11 @@ export function NetworkManager() {
     setMounted(true);
   }, []);
 
-  // Check if we're connected to a supported network
+  // Check if we're connected to a supported network (Sepolia testnet = chainId 11155111)
   useEffect(() => {
     console.log('NetworkManager: chainId changed to:', chainId);
     if (chainId) {
-      const isSupported = chainId === 80001; // Amoy testnet
+      const isSupported = chainId === 11155111; // Sepolia testnet
       console.log('NetworkManager: isSupported:', isSupported);
       setIsConnected(isSupported);
     } else {
@@ -29,9 +29,6 @@ export function NetworkManager() {
       setIsConnected(false);
     }
   }, [chainId]);
-
-  // Force show network switch if not on Amoy (for testing purposes)
-  const forceShowNetworkSwitch = true;
 
   // Debug logging
   useEffect(() => {
@@ -43,7 +40,7 @@ export function NetworkManager() {
     return null;
   }
 
-  const switchToAmoy = async () => {
+  const switchToSepolia = async () => {
     if (!walletConnected) {
       setError('Please connect your wallet first');
       return;
@@ -53,47 +50,63 @@ export function NetworkManager() {
     setError(null);
 
     try {
-      // Try to add the Amoy network to MetaMask first
+      // First, try to add Sepolia network to MetaMask
       if (typeof window !== 'undefined' && window.ethereum) {
         try {
+          console.log('Adding Sepolia network to MetaMask...');
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [{
-              chainId: '0x13881', // 80001 in hex
-              chainName: 'Mumbai Testnet', // Use the old name that MetaMask recognizes
+              chainId: '0xaa36a7', // 11155111 in hex
+              chainName: 'Sepolia',
               nativeCurrency: {
-                name: 'MATIC',
-                symbol: 'MATIC',
+                name: 'Sepolia Ether',
+                symbol: 'SEP',
                 decimals: 18,
               },
-              rpcUrls: ['https://rpc-mumbai.maticvigil.com'], // Use a more standard RPC
-              blockExplorerUrls: ['https://mumbai.polygonscan.com'], // Use Mumbai explorer
+              rpcUrls: ['https://rpc.sepolia.org'],
+              blockExplorerUrls: ['https://sepolia.etherscan.io'],
             }],
           });
           
+          console.log('Sepolia network added successfully, now switching...');
           // After adding, try to switch to it
           if (switchChain) {
-            switchChain({ chainId: 80001 });
+            await switchChain({ chainId: 11155111 });
             return;
           }
         } catch (addError: unknown) {
           const error = addError as { code?: number; message?: string };
-          console.log('Error adding chain:', error);
+          console.log('Error adding Sepolia network:', error);
+          
           if (error.code === 4001) {
-            setError('User rejected adding the network');
+            setError('User rejected adding the Sepolia network');
           } else if (error.code === -32602) {
-            // Chain already exists, try to switch
+            // Chain already exists, try to switch directly
+            console.log('Sepolia network already exists, switching directly...');
             if (switchChain) {
-              switchChain({ chainId: 80001 });
-              return;
+              try {
+                await switchChain({ chainId: 11155111 });
+                return;
+              } catch (switchError: unknown) {
+                const switchErr = switchError as { code?: number; message?: string };
+                if (switchErr.code === 4001) {
+                  setError('User rejected switching to Sepolia network');
+                } else {
+                  setError('Failed to switch to Sepolia: ' + (switchErr.message || 'Unknown error'));
+                }
+              }
             }
           } else {
-            setError('Failed to add network: ' + (error.message || 'Unknown error'));
+            setError('Failed to add Sepolia network: ' + (error.message || 'Unknown error'));
           }
         }
+      } else {
+        setError('MetaMask not detected. Please install MetaMask extension.');
       }
     } catch (err: unknown) {
       const error = err as { code?: number; message?: string };
+      console.error('Network switching error:', error);
       
       if (error.code === 4001) {
         setError('User rejected the network switch');
@@ -104,8 +117,6 @@ export function NetworkManager() {
       setIsSwitching(false);
     }
   };
-
-
 
   // If wallet is not connected, show connection prompt
   if (!walletConnected) {
@@ -132,8 +143,8 @@ export function NetworkManager() {
     );
   }
 
-  // If already connected to Amoy testnet, show success message
-  if (isConnected && chainId === 80001) {
+  // If already connected to Sepolia testnet, show success message
+  if (isConnected && chainId === 11155111) {
     return (
       <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
         <div className="flex items-start">
@@ -144,11 +155,11 @@ export function NetworkManager() {
           </div>
           <div className="ml-3 flex-1">
             <h3 className="text-sm font-medium text-green-800">
-              Connected to Amoy Testnet
+              Connected to Sepolia Testnet
             </h3>
             <div className="mt-2 text-sm text-green-700">
               <p>
-                You&apos;re now connected to the Amoy testnet. You can proceed with registering assets.
+                You&apos;re now connected to the Sepolia testnet. You can proceed with registering assets.
               </p>
               {address && (
                 <p className="mt-1 text-xs text-green-600">
@@ -172,11 +183,11 @@ export function NetworkManager() {
         </div>
         <div className="ml-3 flex-1">
           <h3 className="text-sm font-medium text-yellow-800">
-            Switch to Supported Network
+            Switch to Sepolia Testnet
           </h3>
           <div className="mt-2 text-sm text-yellow-700">
             <p>
-              Your wallet is connected but you need to switch to a supported network to register assets.
+              Your wallet is connected but you need to switch to Sepolia testnet to register assets.
               {chainId && (
                 <span className="block mt-1">
                   Current network ID: {chainId}
@@ -187,7 +198,7 @@ export function NetworkManager() {
           <div className="mt-4 space-y-3">
             <button
               type="button"
-              onClick={switchToAmoy}
+              onClick={switchToSepolia}
               disabled={isSwitching || isWagmiSwitching}
               className="w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-yellow-800 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50"
             >
@@ -197,14 +208,12 @@ export function NetworkManager() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Switching Network...
+                  Switching to Sepolia...
                 </>
               ) : (
-                'Switch to Amoy Testnet'
+                'Switch to Sepolia Testnet'
               )}
             </button>
-            
-
           </div>
           {error && (
             <div className="mt-3 text-sm text-red-600">
