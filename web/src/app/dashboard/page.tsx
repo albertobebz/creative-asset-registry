@@ -8,9 +8,9 @@ const mockAssets = [
   {
     id: '1',
     filename: 'creative-design.png',
-    assetId: '0x1234567890abcdef...',
+    assetId: '9131492',
     date: '2024-01-15',
-    txHash: '0xabc123...',
+    txHash: '0x5abea9e1f8667f2570703ec0915a4e97b3b2ccebb66529b8f8fcc08e8cb3a861',
     pdfUrl: '#',
     jsonUrl: '#',
     licenseExpiresAt: '2025-01-15',
@@ -19,9 +19,9 @@ const mockAssets = [
   {
     id: '2',
     filename: 'document.pdf',
-    assetId: '0xfedcba0987654321...',
+    assetId: 'b325ad',
     date: '2024-01-10',
-    txHash: '0xdef456...',
+    txHash: '0xd2cb5b325a22d0331676d27ff8ffc442519ab47df3b46baa2da5ad7c30060e5e',
     pdfUrl: '#',
     jsonUrl: '#',
     licenseExpiresAt: null,
@@ -48,11 +48,7 @@ export default function DashboardPage() {
 
   const getExplorerUrl = (txHash: string) => {
     // TODO: Use real blockchain explorer URL
-    return `https://mumbai.polygonscan.com/tx/${txHash}`;
-  };
-
-  const formatAssetId = (assetId: string) => {
-    return `${assetId.slice(0, 10)}...${assetId.slice(-8)}`;
+    return `https://sepolia.etherscan.io/tx/${txHash}`;
   };
 
   const formatDate = (dateString: string) => {
@@ -214,7 +210,7 @@ export default function DashboardPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2">
                           <span className="text-sm text-gray-900 font-mono">
-                            {formatAssetId(asset.assetId)}
+                            {asset.assetId}
                           </span>
                           <button
                             onClick={() => copyToClipboard(asset.assetId)}
