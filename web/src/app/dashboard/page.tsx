@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAccount } from 'wagmi';
 
 // Mock data for demonstration - will be replaced with real blockchain data
 const mockAssets = [
@@ -32,6 +33,7 @@ const mockAssets = [
 export default function DashboardPage() {
   const [assets] = useState(mockAssets);
   const [isLoading, setIsLoading] = useState(false);
+  const { chainId } = useAccount();
 
   useEffect(() => {
     // TODO: Load real assets from blockchain/local storage
@@ -40,6 +42,22 @@ export default function DashboardPage() {
       setIsLoading(false);
     }, 1000);
   }, []);
+
+  // Get network name based on chainId
+  const getNetworkName = () => {
+    switch (chainId) {
+      case 1:
+        return 'Ethereum';
+      case 11155111:
+        return 'Sepolia';
+      case 137:
+        return 'Polygon';
+      case 80001:
+        return 'Mumbai';
+      default:
+        return 'Unknown';
+    }
+  };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -125,7 +143,7 @@ export default function DashboardPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Network</p>
-                <p className="text-2xl font-bold text-gray-900">Mumbai</p>
+                <p className="text-2xl font-bold text-gray-900">{getNetworkName()}</p>
               </div>
             </div>
           </div>
