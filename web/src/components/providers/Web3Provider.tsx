@@ -6,7 +6,7 @@ import { RainbowKitProvider, getDefaultConfig } from '@rainbow-me/rainbowkit';
 // Import RainbowKit styles
 import '@rainbow-me/rainbowkit/styles.css';
 
-import { mainnet } from 'wagmi/chains';
+// Removed mainnet import - using only Sepolia for POC
 
 // Custom Sepolia testnet configuration (compatible with MetaMask)
 const sepoliaTestnet = {
@@ -29,11 +29,11 @@ const sepoliaTestnet = {
   testnet: true,
 } as const;
 
-// Use RainbowKit's default config with both networks
+// Use RainbowKit's default config with only Sepolia for POC
 const config = getDefaultConfig({
   appName: 'Creative Asset Registry',
-  projectId: 'CREATIVE_ASSET_REGISTRY',
-  chains: [mainnet, sepoliaTestnet], // Include both networks
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'demo-project-id',
+  chains: [sepoliaTestnet], // Only Sepolia for POC
   ssr: false,
 });
 

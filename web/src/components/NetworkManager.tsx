@@ -17,11 +17,11 @@ export function NetworkManager() {
     setMounted(true);
   }, []);
 
-  // Check if we're connected to a supported network (Sepolia testnet = chainId 11155111)
+  // Check if we're connected to Sepolia testnet (chainId 11155111) - only supported network for POC
   useEffect(() => {
     console.log('NetworkManager: chainId changed to:', chainId);
     if (chainId) {
-      const isSupported = chainId === 11155111; // Sepolia testnet
+      const isSupported = chainId === 11155111; // Only Sepolia testnet for POC
       console.log('NetworkManager: isSupported:', isSupported);
       setIsConnected(isSupported);
     } else {

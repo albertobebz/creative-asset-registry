@@ -43,19 +43,13 @@ export default function DashboardPage() {
     }, 1000);
   }, []);
 
-  // Get network name based on chainId
+  // Get network name based on chainId - only Sepolia supported for POC
   const getNetworkName = () => {
     switch (chainId) {
-      case 1:
-        return 'Ethereum';
       case 11155111:
         return 'Sepolia';
-      case 137:
-        return 'Polygon';
-      case 80001:
-        return 'Mumbai';
       default:
-        return 'Unknown';
+        return 'Not Connected';
     }
   };
 
