@@ -244,7 +244,7 @@ export default function DashboardPage() {
                         />
                         <Link
                           href={`/verify?hash=${asset.assetId}`}
-                          className="text-green-600 hover:text-green-900"
+                          className="text-green-600 hover:text-green-900 cursor-pointer inline-flex items-center px-2 py-1 rounded-md hover:bg-green-50 transition-all duration-200 hover:scale-105"
                         >
                           Verify
                         </Link>
