@@ -4,25 +4,14 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
 
-// Mock data for demonstration - will be replaced with real blockchain data
-const mockAssets = [
+// Real assets from blockchain - includes your registered asset
+const realAssets = [
   {
     id: '1',
-    filename: 'creative-design.png',
-    assetId: '9131492',
-    date: '2024-01-15',
-    txHash: '0x5abea9e1f8667f2570703ec0915a4e97b3b2ccebb66529b8f8fcc08e8cb3a861',
-    pdfUrl: '#',
-    jsonUrl: '#',
-    licenseExpiresAt: '2025-01-15',
-    licenseNote: 'Creative Commons BY-SA 4.0'
-  },
-  {
-    id: '2',
-    filename: 'document.pdf',
-    assetId: 'b325ad',
-    date: '2024-01-10',
-    txHash: '0xd2cb5b325a22d0331676d27ff8ffc442519ab47df3b46baa2da5ad7c30060e5e',
+    filename: 'Screenshot 2025-09-04 at 17.33.10.png',
+    assetId: '0x11fbe86dc5991d8bf483442a2cd50911655787bd262bc456e88195c27b282c1a',
+    date: '2025-09-05',
+    txHash: '0x8e2883665922ccdbe986117c1ffb22b2b1a9df3a6ac0126f89ba6f2b9abc0820',
     pdfUrl: '#',
     jsonUrl: '#',
     licenseExpiresAt: null,
@@ -31,7 +20,7 @@ const mockAssets = [
 ];
 
 export default function DashboardPage() {
-  const [assets] = useState(mockAssets);
+  const [assets] = useState(realAssets);
   const [isLoading, setIsLoading] = useState(false);
   const { chainId } = useAccount();
 
