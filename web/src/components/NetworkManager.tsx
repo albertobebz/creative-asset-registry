@@ -64,7 +64,7 @@ export function NetworkManager() {
                 symbol: 'SEP',
                 decimals: 18,
               },
-              rpcUrls: ['https://rpc.sepolia.org'],
+              rpcUrls: ['https://ethereum-sepolia.publicnode.com'],
               blockExplorerUrls: ['https://sepolia.etherscan.io'],
             }],
           });

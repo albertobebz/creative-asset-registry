@@ -12,6 +12,13 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 80001,
     },
+    sepolia: {
+      type: "http",
+      chainType: "l1",
+      url: process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 11155111,
+    },
   },
   paths: {
     sources: "./contracts",

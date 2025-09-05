@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRegisterAsset } from '../../hooks/useAssetRegistry';
 import { NetworkManager } from '../../components/NetworkManager';
@@ -14,9 +14,86 @@ export default function RegisterPage() {
   const [sha256Hash, setSha256Hash] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [hasAttemptedUpload, setHasAttemptedUpload] = useState(false);
+  const [uploadStartTime, setUploadStartTime] = useState<number | null>(null);
   
   const router = useRouter();
-  const { registerAsset, isLoading, error: contractError, txHash, isSuccess } = useRegisterAsset();
+  const { registerAsset, isLoading, error: contractError, txHash, isSuccess, isConfirming } = useRegisterAsset();
+
+  // Handle transaction completion
+  useEffect(() => {
+    if (isSuccess && txHash) {
+      console.log('Transaction completed successfully:', txHash);
+      setIsUploading(false);
+    }
+  }, [isSuccess, txHash]);
+
+  // Debug logging for transaction states
+  useEffect(() => {
+    console.log('Transaction states:', {
+      isLoading,
+      isConfirming,
+      isSuccess,
+      txHash,
+      contractError
+    });
+  }, [isLoading, isConfirming, isSuccess, txHash, contractError]);
+
+  // Handle contract errors
+  useEffect(() => {
+    if (contractError) {
+      console.error('Contract error:', contractError);
+      setError(contractError);
+      setIsUploading(false);
+    }
+  }, [contractError]);
+
+  // Handle loading state from the hook
+  useEffect(() => {
+    console.log('Transaction states:', {
+      hasAttemptedUpload,
+      isLoading,
+      isConfirming,
+      isSuccess,
+      txHash,
+      contractError,
+      uploadStartTime
+    });
+
+    // Don't set error immediately - let the delayed error handler take care of it
+    // This allows contract errors to be detected first
+  }, [hasAttemptedUpload, isLoading, isConfirming, isSuccess, contractError, txHash, uploadStartTime]);
+
+  // Timeout mechanism for stuck transactions
+  useEffect(() => {
+    if (hasAttemptedUpload && uploadStartTime && !isSuccess && !contractError) {
+      const timeout = setTimeout(() => {
+        if (!isLoading && !isConfirming && !txHash && !contractError) {
+          console.log('Transaction timeout - no response after 30 seconds');
+          setError('Transaction timed out. Please try again.');
+          setIsUploading(false);
+        }
+      }, 30000); // 30 second timeout
+
+      return () => clearTimeout(timeout);
+    }
+  }, [hasAttemptedUpload, uploadStartTime, isSuccess, contractError, isLoading, isConfirming, txHash]);
+
+  // Add a small delay before showing generic error to allow contract errors to be detected first
+  useEffect(() => {
+    if (hasAttemptedUpload && !isLoading && !isConfirming && !txHash && !isSuccess && !contractError) {
+      const delayTimeout = setTimeout(() => {
+        // Double-check that we still don't have a contract error after the delay
+        if (!contractError) {
+          console.log('Setting delayed error: Transaction failed or was cancelled');
+          setError('Transaction failed or was cancelled');
+          setIsUploading(false);
+        }
+      }, 2000); // 2 second delay
+
+      return () => clearTimeout(delayTimeout);
+    }
+  }, [hasAttemptedUpload, isLoading, isConfirming, isSuccess, contractError, txHash]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -50,6 +127,8 @@ export default function RegisterPage() {
     setError(null);
     setAssetId('');
     setSha256Hash('');
+    setHasAttemptedUpload(false); // Reset upload attempt flag when new file is selected
+    setUploadStartTime(null); // Reset upload start time
   };
 
   // Drag and drop handlers
@@ -120,6 +199,8 @@ export default function RegisterPage() {
     setIsUploading(true);
     setUploadProgress(0);
     setError(null);
+    setHasAttemptedUpload(true);
+    setUploadStartTime(Date.now());
 
     try {
       console.log('Starting file processing...');
@@ -150,6 +231,8 @@ export default function RegisterPage() {
       console.log('Calling registerAsset with:', keccak256Hash);
       await registerAsset(keccak256Hash);
       console.log('registerAsset called successfully');
+      
+      // Don't set isUploading to false here - let the success handler take over
       
     } catch (err) {
       console.error('Error during upload:', err);
@@ -316,6 +399,19 @@ export default function RegisterPage() {
                     <h3 className="text-sm font-medium text-red-800">Upload Error</h3>
                     <div className="mt-2 text-sm text-red-700">
                       <p>{error || contractError}</p>
+                      {(error || contractError)?.includes('insufficient funds') && (
+                        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                          <h4 className="text-sm font-medium text-blue-800 mb-2">Need Sepolia ETH?</h4>
+                          <p className="text-sm text-blue-700 mb-2">
+                            You can get free Sepolia ETH from these faucets:
+                          </p>
+                          <ul className="text-sm text-blue-700 list-disc list-inside space-y-1">
+                            <li><a href="https://sepoliafaucet.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-800">Sepolia Faucet</a></li>
+                            <li><a href="https://faucet.sepolia.dev/" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-800">Sepolia Dev Faucet</a></li>
+                            <li><a href="https://sepolia-faucet.pk910.de/" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-800">PoW Faucet</a></li>
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

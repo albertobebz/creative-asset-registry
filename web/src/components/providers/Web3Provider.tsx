@@ -19,8 +19,8 @@ const sepoliaTestnet = {
     symbol: 'SEP',
   },
   rpcUrls: {
-    public: { http: ['https://rpc.sepolia.org'] },
-    default: { http: ['https://rpc.sepolia.org'] },
+    public: { http: ['https://ethereum-sepolia.publicnode.com', 'https://rpc.sepolia.org'] },
+    default: { http: ['https://ethereum-sepolia.publicnode.com'] },
   },
   blockExplorers: {
     etherscan: { name: 'Sepolia Etherscan', url: 'https://sepolia.etherscan.io' },

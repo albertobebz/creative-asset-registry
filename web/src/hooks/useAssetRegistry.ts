@@ -129,9 +129,23 @@ export function useRegisterAsset() {
 
   const { writeContract, data: hash, isPending } = useWriteContract();
 
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+  const { isLoading: isConfirming, isSuccess, error: receiptError } = useWaitForTransactionReceipt({
     hash,
+    chainId: chainId || 1,
   });
+
+  // Debug logging for transaction receipt
+  useEffect(() => {
+    if (hash) {
+      console.log('Transaction receipt states:', {
+        hash,
+        isConfirming,
+        isSuccess,
+        receiptError,
+        chainId
+      });
+    }
+  }, [hash, isConfirming, isSuccess, receiptError, chainId]);
 
   const registerAsset = async (assetId: string) => {
     if (!isConnected) {
@@ -157,8 +171,28 @@ export function useRegisterAsset() {
         chainId: chainId || 1,
       });
     } catch (err: unknown) {
-      const error = err as { message?: string };
-      setError(error.message || 'Failed to register asset');
+      const error = err as { message?: string; code?: string; reason?: string };
+      console.log('Contract error details:', error);
+      
+      let errorMessage = 'Failed to register asset';
+      
+      // Check for specific error types
+      if (error.message) {
+        if (error.message.includes('insufficient funds') || 
+            error.message.includes('insufficient balance') ||
+            error.message.includes('gas required exceeds allowance')) {
+          errorMessage = 'Transaction failed — insufficient funds for gas. Please add Sepolia ETH to your wallet.';
+        } else if (error.message.includes('user rejected') || 
+                   error.message.includes('User denied')) {
+          errorMessage = 'Transaction cancelled by user';
+        } else if (error.message.includes('revert')) {
+          errorMessage = 'Transaction failed — smart contract reverted. Please check the contract state.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setError(errorMessage);
       setIsLoading(false);
     }
   };

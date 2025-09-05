@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
 
-// Real assets from blockchain - includes your registered asset
+// Real assets from blockchain - includes all your registered assets
 const realAssets = [
   {
     id: '1',
@@ -16,13 +16,30 @@ const realAssets = [
     jsonUrl: '#',
     licenseExpiresAt: null,
     licenseNote: ''
+  },
+  {
+    id: '2',
+    filename: 'Screenshot 2025-09-04 at 17.06.51.png',
+    assetId: '0x6ae2e45b0d9cbb3ad1974047fbe5f1b0d7ad3e5be9b123e93dc5c07af284e905',
+    date: '2025-09-05',
+    txHash: '0x[PENDING_TRANSACTION]', // Will be updated when transaction is confirmed
+    pdfUrl: '#',
+    jsonUrl: '#',
+    licenseExpiresAt: null,
+    licenseNote: ''
   }
 ];
 
 export default function DashboardPage() {
   const [assets] = useState(realAssets);
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { chainId } = useAccount();
+
+  // Prevent hydration mismatch by only rendering after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     // TODO: Load real assets from blockchain/local storage
@@ -34,6 +51,7 @@ export default function DashboardPage() {
 
   // Get network name based on chainId - only Sepolia supported for POC
   const getNetworkName = () => {
+    if (!mounted) return 'Loading...';
     switch (chainId) {
       case 11155111:
         return 'Sepolia';
@@ -54,6 +72,7 @@ export default function DashboardPage() {
 
   const formatDate = (dateString: string) => {
     // Use consistent date formatting to avoid hydration mismatch
+    if (!mounted) return 'Loading...';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
