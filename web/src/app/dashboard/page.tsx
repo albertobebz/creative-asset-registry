@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
 import { useUserAssets } from '../../hooks/useAssetRegistry';
-import BlockchainCertificate from '../../components/BlockchainCertificate';
+import BlockchainCertificate, { AssetJSONDownload } from '../../components/BlockchainCertificate';
 import toast from 'react-hot-toast';
 
 // Assets are now loaded dynamically from localStorage and blockchain
@@ -238,7 +238,10 @@ export default function DashboardPage() {
                           asset={asset} 
                           onDownload={() => toast.success(`Blockchain certificate downloaded for ${asset.filename}`)} 
                         />
-                        <span className="text-gray-400">JSON</span>
+                        <AssetJSONDownload 
+                          asset={asset} 
+                          onDownload={() => toast.success(`Asset metadata downloaded for ${asset.filename}`)} 
+                        />
                         <Link
                           href={`/verify?hash=${asset.assetId}`}
                           className="text-green-600 hover:text-green-900"

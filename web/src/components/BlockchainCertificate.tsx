@@ -1,11 +1,69 @@
 'use client';
 
 import { jsPDF } from 'jspdf';
-import { AssetData } from '../types/global';
+import { AssetData } from '../hooks/useAssetRegistry';
 
 interface BlockchainCertificateProps {
   asset: AssetData;
   onDownload: () => void;
+}
+
+export function generateAssetJSON(asset: AssetData): void {
+  const assetData = {
+    certificate: {
+      title: "Creative Asset Registry - Asset Metadata",
+      version: "1.0",
+      generatedAt: new Date().toISOString(),
+      generatedBy: "Creative Asset Registry"
+    },
+    asset: {
+      filename: asset.filename,
+      mimeType: asset.mime,
+      size: asset.size,
+      sizeFormatted: `${(asset.size / 1024).toFixed(2)} KB`,
+      sha256Hash: asset.assetId,
+      registration: {
+        owner: asset.registration.owner,
+        timestamp: asset.registration.timestamp.toString(),
+        timestampFormatted: new Date(Number(asset.registration.timestamp)).toISOString(),
+        licenseExpiresAt: asset.registration.licenseExpiresAt.toString(),
+        licenseNote: asset.registration.licenseNote
+      },
+      blockchain: {
+        network: "Sepolia Testnet",
+        chainId: 11155111,
+        transactionHash: asset.txHash,
+        transactionUrl: `https://sepolia.etherscan.io/tx/${asset.txHash}`,
+        contractAddress: "0x1111111111111111111111111111111111111111" // This would be your actual contract address
+      },
+      verification: {
+        instructions: "This JSON file contains the complete metadata for a creative asset registered on the Ethereum Sepolia blockchain.",
+        verificationSteps: [
+          "1. Verify the transaction hash on Etherscan",
+          "2. Confirm the asset ID matches the SHA256 hash of your file",
+          "3. Check the registration timestamp",
+          "4. Validate the blockchain network (Sepolia Testnet)"
+        ],
+        blockchainExplorer: "https://sepolia.etherscan.io",
+        apiEndpoints: {
+          etherscan: `https://api-sepolia.etherscan.io/api?module=proxy&action=eth_getTransactionByHash&txhash=${asset.txHash}&apikey=YourApiKey`
+        }
+      }
+    }
+  };
+
+  // Create and download the JSON file
+  const jsonString = JSON.stringify(assetData, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `asset-metadata-${asset.filename.replace(/\.[^/.]+$/, '')}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 export function generateBlockchainCertificate(asset: AssetData): void {
@@ -138,6 +196,22 @@ export function generateBlockchainCertificate(asset: AssetData): void {
   doc.save(fileName);
 }
 
+export function AssetJSONDownload({ asset, onDownload }: BlockchainCertificateProps) {
+  const handleDownload = () => {
+    generateAssetJSON(asset);
+    onDownload();
+  };
+
+  return (
+    <button
+      onClick={handleDownload}
+      className="text-gray-400 hover:text-gray-600 cursor-pointer"
+    >
+      JSON
+    </button>
+  );
+}
+
 export default function BlockchainCertificate({ asset, onDownload }: BlockchainCertificateProps) {
   const handleDownload = () => {
     generateBlockchainCertificate(asset);
@@ -147,12 +221,9 @@ export default function BlockchainCertificate({ asset, onDownload }: BlockchainC
   return (
     <button
       onClick={handleDownload}
-      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      className="text-gray-400 hover:text-gray-600 cursor-pointer"
     >
-      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-      Download PDF
+      PDF
     </button>
   );
 }
