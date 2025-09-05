@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { contractConfig } from '../lib/web3';
 // Network configurations
@@ -223,5 +223,115 @@ export function useRegisterAsset() {
     txHash,
     isSuccess,
     isConfirming,
+  };
+}
+
+// Hook for managing user's registered assets
+export function useUserAssets() {
+  const [assets, setAssets] = useState<AssetData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { address, isConnected } = useAccount();
+
+  // Load assets from localStorage
+  const loadUserAssets = useCallback(() => {
+    if (!isConnected || !address) {
+      setAssets([]);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Get asset IDs from localStorage
+      const userAssetsKey = `user_assets_${address.toLowerCase()}`;
+      const storedAssets = localStorage.getItem(userAssetsKey);
+
+      if (!storedAssets) {
+        setAssets([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const assetIds: string[] = JSON.parse(storedAssets);
+      const loadedAssets: AssetData[] = [];
+
+      assetIds.forEach((assetId) => {
+        // Get stored file metadata
+        const fileMetadataKey = `file_metadata_${assetId}`;
+        const fileMetadata = localStorage.getItem(fileMetadataKey);
+
+        if (fileMetadata) {
+          const metadata = JSON.parse(fileMetadata);
+          const assetData = {
+            assetId,
+            filename: metadata.filename,
+            mime: metadata.mime,
+            size: metadata.size,
+            sha256Raw: metadata.sha256Hash,
+            txHash: metadata.txHash,
+            registration: {
+              owner: address,
+              timestamp: BigInt(metadata.timestamp || Date.now()),
+              licenseExpiresAt: BigInt(0),
+              licenseNote: ''
+            }
+          };
+          loadedAssets.push(assetData);
+        }
+      });
+
+      setAssets(loadedAssets);
+    } catch (err) {
+      console.error('Error loading user assets:', err);
+      setError('Failed to load assets');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [address, isConnected]);
+
+  // Add a new asset to user's collection
+  const addAsset = useCallback((assetData: AssetData) => {
+    if (!address) {
+      return;
+    }
+
+    const userAssetsKey = `user_assets_${address.toLowerCase()}`;
+    const storedAssets = localStorage.getItem(userAssetsKey);
+    const assetIds = storedAssets ? JSON.parse(storedAssets) : [];
+
+    if (!assetIds.includes(assetData.assetId)) {
+      assetIds.push(assetData.assetId);
+      localStorage.setItem(userAssetsKey, JSON.stringify(assetIds));
+    }
+
+    // Store file metadata
+    const fileMetadataKey = `file_metadata_${assetData.assetId}`;
+    const metadata = {
+      filename: assetData.filename,
+      mime: assetData.mime,
+      size: assetData.size,
+      sha256Hash: assetData.sha256Raw,
+      txHash: assetData.txHash,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(fileMetadataKey, JSON.stringify(metadata));
+
+    // Reload assets
+    loadUserAssets();
+  }, [address, loadUserAssets]);
+
+  // Load assets when component mounts or address changes
+  useEffect(() => {
+    loadUserAssets();
+  }, [loadUserAssets]);
+
+  return {
+    assets,
+    isLoading,
+    error,
+    addAsset,
+    refreshAssets: loadUserAssets
   };
 }

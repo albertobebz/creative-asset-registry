@@ -3,51 +3,23 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
+import { useUserAssets } from '../../hooks/useAssetRegistry';
 
-// Real assets from blockchain - includes all your registered assets
-const realAssets = [
-  {
-    id: '1',
-    filename: 'Screenshot 2025-09-04 at 17.33.10.png',
-    assetId: '0x11fbe86dc5991d8bf483442a2cd50911655787bd262bc456e88195c27b282c1a',
-    date: '2025-09-05',
-    txHash: '0x8e2883665922ccdbe986117c1ffb22b2b1a9df3a6ac0126f89ba6f2b9abc0820',
-    pdfUrl: '#',
-    jsonUrl: '#',
-    licenseExpiresAt: null,
-    licenseNote: ''
-  },
-  {
-    id: '2',
-    filename: 'Screenshot 2025-09-04 at 17.06.51.png',
-    assetId: '0x6ae2e45b0d9cbb3ad1974047fbe5f1b0d7ad3e5be9b123e93dc5c07af284e905',
-    date: '2025-09-05',
-    txHash: '0x[PENDING_TRANSACTION]', // Will be updated when transaction is confirmed
-    pdfUrl: '#',
-    jsonUrl: '#',
-    licenseExpiresAt: null,
-    licenseNote: ''
-  }
-];
+// Assets are now loaded dynamically from localStorage and blockchain
 
 export default function DashboardPage() {
-  const [assets] = useState(realAssets);
-  const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { chainId } = useAccount();
+  const { chainId, address } = useAccount();
+  const { assets, isLoading, error } = useUserAssets();
+
 
   // Prevent hydration mismatch by only rendering after mount
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    // TODO: Load real assets from blockchain/local storage
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+
+  // Assets are now loaded automatically by the useUserAssets hook
 
   // Get network name based on chainId - only Sepolia supported for POC
   const getNetworkName = () => {
@@ -130,7 +102,7 @@ export default function DashboardPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Licensed Assets</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {assets.filter(asset => asset.licenseExpiresAt).length}
+                  {assets.filter(asset => asset.registration.licenseExpiresAt && Number(asset.registration.licenseExpiresAt) > 0).length}
                 </p>
               </div>
             </div>
@@ -202,7 +174,7 @@ export default function DashboardPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {assets.map((asset) => (
-                    <tr key={asset.id} className="hover:bg-gray-50">
+                    <tr key={asset.assetId} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
@@ -244,15 +216,15 @@ export default function DashboardPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatDate(asset.date)}
+                        {formatDate(new Date(Number(asset.registration.timestamp) * 1000).toISOString())}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {asset.licenseExpiresAt ? (
+                        {asset.registration.licenseExpiresAt && Number(asset.registration.licenseExpiresAt) > 0 ? (
                           <div className="text-sm">
                             <div className="text-green-600 font-medium">Licensed</div>
-                            <div className="text-gray-500">{formatDate(asset.licenseExpiresAt)}</div>
-                            {asset.licenseNote && (
-                              <div className="text-xs text-gray-400 mt-1">{asset.licenseNote}</div>
+                            <div className="text-gray-500">{formatDate(new Date(Number(asset.registration.licenseExpiresAt) * 1000).toISOString())}</div>
+                            {asset.registration.licenseNote && (
+                              <div className="text-xs text-gray-400 mt-1">{asset.registration.licenseNote}</div>
                             )}
                           </div>
                         ) : (
@@ -260,18 +232,8 @@ export default function DashboardPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <a
-                          href={asset.pdfUrl}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          PDF
-                        </a>
-                        <a
-                          href={asset.jsonUrl}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          JSON
-                        </a>
+                        <span className="text-gray-400">PDF</span>
+                        <span className="text-gray-400">JSON</span>
                         <Link
                           href={`/verify?hash=${asset.assetId}`}
                           className="text-green-600 hover:text-green-900"

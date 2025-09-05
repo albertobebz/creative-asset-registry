@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useRegisterAsset } from '../../hooks/useAssetRegistry';
+import { useRegisterAsset, useUserAssets } from '../../hooks/useAssetRegistry';
 import { NetworkManager } from '../../components/NetworkManager';
 import { formatHash } from '../../lib/web3';
 
@@ -19,14 +19,33 @@ export default function RegisterPage() {
   
   const router = useRouter();
   const { registerAsset, isLoading, error: contractError, txHash, isSuccess, isConfirming } = useRegisterAsset();
+  const { addAsset } = useUserAssets();
 
   // Handle transaction completion
   useEffect(() => {
-    if (isSuccess && txHash) {
+    if (isSuccess && txHash && selectedFile && assetId) {
       console.log('Transaction completed successfully:', txHash);
       setIsUploading(false);
+      
+      // Save the asset data to localStorage
+      const assetData = {
+        assetId,
+        filename: selectedFile.name,
+        mime: selectedFile.type,
+        size: selectedFile.size,
+        sha256Raw: sha256Hash,
+        txHash,
+        registration: {
+          owner: '', // Will be set by the hook
+          timestamp: BigInt(Date.now()),
+          licenseExpiresAt: BigInt(0),
+          licenseNote: ''
+        }
+      };
+      
+             addAsset(assetData);
     }
-  }, [isSuccess, txHash]);
+  }, [isSuccess, txHash, selectedFile, assetId, sha256Hash]);
 
   // Debug logging for transaction states
   useEffect(() => {
