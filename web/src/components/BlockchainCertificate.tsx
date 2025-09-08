@@ -74,7 +74,6 @@ export function generateBlockchainCertificate(asset: AssetData): void {
   // Colors
   const primaryColor = '#4F46E5'; // Indigo
   const secondaryColor = '#6B7280'; // Gray
-  const accentColor = '#10B981'; // Green
   
   // Header
   doc.setFillColor(primaryColor);

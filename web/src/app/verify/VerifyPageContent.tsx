@@ -7,14 +7,40 @@ export function VerifyPageContent() {
   const searchParams = useSearchParams();
   const hashFromUrl = searchParams.get('hash');
   
-  const [verificationMode, setVerificationMode] = useState<'hash' | 'upload'>('hash');
   const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationResult, setVerificationResult] = useState<any>(null);
+  const [verificationResult, setVerificationResult] = useState<{
+    assetId: string;
+    owner: string;
+    timestamp: number;
+    exists: boolean;
+    message?: string;
+    filename?: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const handleHashVerification = async (hash: string) => {
+    if (hash) {
+      setIsVerifying(true);
+      setError(null);
+      
+      // Simulate API call
+      setTimeout(() => {
+        setVerificationResult({
+          assetId: hash,
+          owner: '0x1234...5678',
+          timestamp: Date.now(),
+          exists: true,
+          message: 'Asset found on blockchain'
+        });
+        setIsVerifying(false);
+      }, 1500);
+    }
+  };
 
   useEffect(() => {
     if (hashFromUrl) {
-      setVerificationMode('hash');
+      // Auto-verify if hash is provided in URL
+      handleHashVerification(hashFromUrl);
     }
   }, [hashFromUrl]);
 
@@ -24,18 +50,7 @@ export function VerifyPageContent() {
     const hash = formData.get('hash') as string;
     
     if (hash) {
-      setIsVerifying(true);
-      setError(null);
-      
-      // Simulate API call
-      setTimeout(() => {
-        setVerificationResult({
-          assetId: hash,
-          status: 'verified',
-          message: 'Asset found on blockchain'
-        });
-        setIsVerifying(false);
-      }, 1500);
+      await handleHashVerification(hash);
     }
   };
 
@@ -48,9 +63,12 @@ export function VerifyPageContent() {
       // Simulate file processing
       setTimeout(() => {
         setVerificationResult({
-          filename: file.name,
-          status: 'verified',
-          message: 'File verified on blockchain'
+          assetId: '0x' + Math.random().toString(16).substr(2, 64),
+          owner: '0x1234...5678',
+          timestamp: Date.now(),
+          exists: true,
+          message: 'File verified on blockchain',
+          filename: file.name
         });
         setIsVerifying(false);
       }, 2000);

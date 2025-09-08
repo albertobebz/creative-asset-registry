@@ -45,7 +45,7 @@ export default function RegisterPage() {
       
              addAsset(assetData);
     }
-  }, [isSuccess, txHash, selectedFile, assetId, sha256Hash]);
+  }, [isSuccess, txHash, selectedFile, assetId, sha256Hash, addAsset]);
 
   // Debug logging for transaction states
   useEffect(() => {

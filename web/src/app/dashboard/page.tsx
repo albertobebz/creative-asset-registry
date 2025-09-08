@@ -11,8 +11,21 @@ import toast from 'react-hot-toast';
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
-  const { chainId, address } = useAccount();
-  const { assets, isLoading, error } = useUserAssets();
+  const [sortOrder, setSortOrder] = useState<'recent' | 'oldest'>('recent');
+  const { chainId } = useAccount();
+  const { assets, isLoading } = useUserAssets();
+
+  // Sort assets based on selected sort order
+  const sortedAssets = [...assets].sort((a, b) => {
+    const timestampA = Number(a.registration.timestamp) || 0;
+    const timestampB = Number(b.registration.timestamp) || 0;
+    
+    if (sortOrder === 'recent') {
+      return timestampB - timestampA; // Most recent first
+    } else {
+      return timestampA - timestampB; // Oldest first
+    }
+  });
 
 
   // Prevent hydration mismatch by only rendering after mount
@@ -89,7 +102,7 @@ export default function DashboardPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Total Assets</p>
-                <p className="text-2xl font-bold text-gray-900">{assets.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{sortedAssets.length}</p>
               </div>
             </div>
           </div>
@@ -104,7 +117,7 @@ export default function DashboardPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Licensed Assets</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {assets.filter(asset => asset.registration.licenseExpiresAt && Number(asset.registration.licenseExpiresAt) > 0).length}
+                  {sortedAssets.filter(asset => asset.registration.licenseExpiresAt && Number(asset.registration.licenseExpiresAt) > 0).length}
                 </p>
               </div>
             </div>
@@ -128,7 +141,30 @@ export default function DashboardPage() {
         {/* Assets Table */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Registered Assets</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-medium text-gray-900">Registered Assets</h2>
+              <div className="flex items-center space-x-2">
+                <label htmlFor="sort-order" className="text-sm font-medium text-gray-700 hidden sm:block">
+                  Sort by:
+                </label>
+                <div className="relative">
+                  <select
+                    id="sort-order"
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value as 'recent' | 'oldest')}
+                    className="block w-40 px-3 py-2 pr-8 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm appearance-none bg-white"
+                  >
+                    <option value="recent">Most Recent</option>
+                    <option value="oldest">Oldest First</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {isLoading ? (
@@ -136,7 +172,7 @@ export default function DashboardPage() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
               <p className="mt-4 text-gray-600">Loading your assets...</p>
             </div>
-          ) : assets.length === 0 ? (
+          ) : sortedAssets.length === 0 ? (
             <div className="p-12 text-center">
               <div className="mx-auto h-16 w-16 text-gray-400 mb-4">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -175,7 +211,7 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {assets.map((asset) => (
+                  {sortedAssets.map((asset) => (
                     <tr key={asset.assetId} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
