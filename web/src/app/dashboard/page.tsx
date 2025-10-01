@@ -61,7 +61,23 @@ export default function DashboardPage() {
     // Use consistent date formatting to avoid hydration mismatch
     if (!mounted) return 'Loading...';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('en-GB', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
+
+  const formatTimestamp = (timestamp: string | number | bigint) => {
+    if (!mounted) return 'Loading...';
+    
+    const numTimestamp = Number(timestamp);
+    
+    // The timestamps from localStorage are already in milliseconds (Date.now())
+    // So we don't need to multiply by 1000
+    const date = new Date(numTimestamp);
+    
+    return date.toLocaleDateString('en-GB', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit'
@@ -254,13 +270,13 @@ export default function DashboardPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatDate(new Date(Number(asset.registration.timestamp) * 1000).toISOString())}
+                        {formatTimestamp(asset.registration.timestamp)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {asset.registration.licenseExpiresAt && Number(asset.registration.licenseExpiresAt) > 0 ? (
                           <div className="text-sm">
                             <div className="text-green-600 font-medium">Licensed</div>
-                            <div className="text-gray-500">{formatDate(new Date(Number(asset.registration.licenseExpiresAt) * 1000).toISOString())}</div>
+                            <div className="text-gray-500">{formatTimestamp(asset.registration.licenseExpiresAt)}</div>
                             {asset.registration.licenseNote && (
                               <div className="text-xs text-gray-400 mt-1">{asset.registration.licenseNote}</div>
                             )}

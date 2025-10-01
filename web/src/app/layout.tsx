@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Creative Asset Registry",
-  description: "Decentralized creative asset registry with blockchain verification",
+  title: "Svelto - Creative Asset Registry",
+  description: "Svelto - Decentralized creative asset registry with blockchain verification. Register and verify your digital creations with tamper-proof certificates.",
 };
 
 export default function RootLayout({
@@ -26,14 +26,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Web3Provider>
           <Navigation />
           {children}
-          <Toaster 
+          <Toaster
             position="top-right"
             toastOptions={{
               duration: 3000,

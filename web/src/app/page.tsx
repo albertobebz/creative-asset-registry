@@ -7,8 +7,8 @@ export default function HomePage() {
       <div className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Creative Asset Registry
+            <h1 className="text-6xl md:text-8xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-6 tracking-tight">
+              Svelto
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Register your creative assets on the blockchain with tamper-proof verification. 
@@ -19,7 +19,7 @@ export default function HomePage() {
                 href="/register"
                 className="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
               >
-                Register Your First Asset
+                Register Your Asset
               </Link>
               <Link
                 href="/verify"
@@ -175,8 +175,8 @@ export default function HomePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h3 className="text-2xl font-bold mb-2">Creative Asset Registry</h3>
-            <p className="text-gray-400">Decentralized asset verification on Polygon Mumbai</p>
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-2">Svelto</h3>
+            <p className="text-gray-400">Creative Asset Registry • Decentralized verification on Polygon Mumbai</p>
           </div>
           
           <div className="border-t border-gray-800 pt-8">
